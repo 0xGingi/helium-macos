@@ -15,7 +15,7 @@ jobs:
     name: Build macOS binaries of Helium
     strategy:
       matrix:
-        arch: [arm64, x86_64]
+        arch: [arm64]
       fail-fast: true
       max-parallel: 2
     uses: ./.github/workflows/building.yml
@@ -44,10 +44,6 @@ jobs:
       - name: Prepare release
         id: bake
         run: ./github_prepare_release.sh | tee -a github_actions_release.log
-      - name: Get built x86-64 binary
-        uses: actions/download-artifact@v4
-        with:
-          name: ${{ steps.bake.outputs.x64_file_name }}
       - name: Get built arm64 binary
         uses: actions/download-artifact@v4
         with:
@@ -64,7 +60,7 @@ jobs:
             find ./release_asset/ -name '*.delta'
             echo EOF
           } >> "$GITHUB_OUTPUT"
-      - name: Release Helium binaries
+      - name: Release Helium binaries (arm64 only)
         uses: softprops/action-gh-release@4634c16e79c963813287e889244c50009e7f0981
         with:
           body_path: ./github_release_note.md
@@ -72,7 +68,6 @@ jobs:
           prerelease: true
           files: |
             ./release_asset/${{ steps.bake.outputs.arm64_file_name }}
-            ./release_asset/${{ steps.bake.outputs.x64_file_name }}
             ${{ steps.list_deltas.outputs.deltas }}
           name: ${{ steps.bake.outputs.release_name }}
           tag_name: ${{ steps.bake.outputs.release_tag_version }}

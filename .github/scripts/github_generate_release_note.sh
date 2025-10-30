@@ -6,8 +6,8 @@ _main_repo="$_root_dir/helium-chromium"
 _helium_version=$(python3 "$_main_repo/utils/helium_version.py" --tree "$_main_repo" --platform-tree "$_root_dir" --print)
 
 _base_hash_name="helium_${_helium_version}"
-_x64_hash_name="${_base_hash_name}_x86_64-macos.dmg.hashes.md"
 _arm64_hash_name="${_base_hash_name}_arm64-macos.dmg.hashes.md"
+_x64_hash_name="${_base_hash_name}_x86_64-macos.dmg.hashes.md"
 
 _gh_run_href="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
 
@@ -24,9 +24,15 @@ if [ -f $_root_dir/announcements.md ]; then
     printf '### Release Assets Info %s\n\n' | tee -a ./github_release_note.md
 fi
 
-cat $_arm64_hash_name | tee -a ./github_release_note.md
-printf '\n' | tee -a ./github_release_note.md
-cat $_x64_hash_name | tee -a ./github_release_note.md
+if [ -f "$_arm64_hash_name" ]; then
+  cat "$_arm64_hash_name" | tee -a ./github_release_note.md
+  printf '\n' | tee -a ./github_release_note.md
+fi
+
+if [ -f "$_x64_hash_name" ]; then
+  cat "$_x64_hash_name" | tee -a ./github_release_note.md
+  printf '\n' | tee -a ./github_release_note.md
+fi
 
 submodule_commit_at() {
     git ls-tree "$1" helium-chromium | awk '{print $3}'
