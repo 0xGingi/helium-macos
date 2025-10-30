@@ -29,6 +29,12 @@ else
   fi
 fi
 
+# Ensure required Python modules are available for the interpreter that will run clone.py
+# This avoids ModuleNotFoundError inside depot_tools/gclient when VPYTHON is bypassed.
+"$PYTHON_BIN" -m ensurepip --upgrade >/dev/null 2>&1 || true
+"$PYTHON_BIN" -m pip install --upgrade pip >/dev/null 2>&1 || true
+"$PYTHON_BIN" -m pip install httplib2==0.22.0 requests Pillow >/dev/null 2>&1
+
 # Clone to get the Chromium Source
 clone=true
 retrieve_generic=false
