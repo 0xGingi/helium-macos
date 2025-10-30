@@ -16,6 +16,10 @@ brew link --overwrite python@3.12
 
 PY312_PREFIX="$(brew --prefix python@3.12)"
 export PATH="$PY312_PREFIX/bin:$PATH"
+# Persist python 3.12 at the front of PATH for subsequent steps.
+if [ -n "${GITHUB_PATH:-}" ]; then
+  echo "$PY312_PREFIX/bin" >> "$GITHUB_PATH"
+fi
 python3 --version
 which python3
 

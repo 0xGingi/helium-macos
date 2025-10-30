@@ -9,6 +9,12 @@ _download_cache="$_root_dir/build/download_cache"
 _src_dir="$_root_dir/build/src"
 _main_repo="$_root_dir/helium-chromium"
 
+# Prefer a depot_tools-compatible Python (3.12) if available
+PYTHON_BIN="$(command -v python3.12 || true)"
+if [[ -z "$PYTHON_BIN" ]]; then
+  PYTHON_BIN="$(command -v python3)"
+fi
+
 # Clone to get the Chromium Source
 clone=true
 retrieve_generic=false
@@ -43,21 +49,21 @@ if $retrieve_generic; then
     if $clone; then
         if [[ $_target_cpu == "arm64" ]]; then
             # For arm64 (Apple Silicon)
-            python3 "$_main_repo/utils/clone.py" -p mac-arm -o "$_src_dir"
+            "$PYTHON_BIN" "$_main_repo/utils/clone.py" -p mac-arm -o "$_src_dir"
         else
             # For amd64 (Intel)
-            python3 "$_main_repo/utils/clone.py" -p mac -o "$_src_dir"
+            "$PYTHON_BIN" "$_main_repo/utils/clone.py" -p mac -o "$_src_dir"
         fi
     else
-        python3 "$_main_repo/utils/downloads.py" retrieve -i "$_main_repo/downloads.ini" -c "$_download_cache"
-        python3 "$_main_repo/utils/downloads.py" unpack -i "$_main_repo/downloads.ini" -c "$_download_cache" "$_src_dir"
+        "$PYTHON_BIN" "$_main_repo/utils/downloads.py" retrieve -i "$_main_repo/downloads.ini" -c "$_download_cache"
+        "$PYTHON_BIN" "$_main_repo/utils/downloads.py" unpack -i "$_main_repo/downloads.ini" -c "$_download_cache" "$_src_dir"
     fi
 
     # Retrieve and unpack general resources
-    python3 "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads.ini" -c "$_download_cache"
-    python3 "$_main_repo/utils/downloads.py" retrieve -i "$_main_repo/extras.ini" -c "$_download_cache"
-    python3 "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads.ini" -c "$_download_cache" "$_src_dir"
-    python3 "$_main_repo/utils/downloads.py" unpack -i "$_main_repo/extras.ini" -c "$_download_cache" "$_src_dir"
+    "$PYTHON_BIN" "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads.ini" -c "$_download_cache"
+    "$PYTHON_BIN" "$_main_repo/utils/downloads.py" retrieve -i "$_main_repo/extras.ini" -c "$_download_cache"
+    "$PYTHON_BIN" "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads.ini" -c "$_download_cache" "$_src_dir"
+    "$PYTHON_BIN" "$_main_repo/utils/downloads.py" unpack -i "$_main_repo/extras.ini" -c "$_download_cache" "$_src_dir"
 fi
 
 if $retrieve_arch_specific; then
@@ -69,20 +75,20 @@ if $retrieve_arch_specific; then
 
     # Retrieve and unpack platform-specific resources
     if [[ $(uname -m) == "arm64" ]]; then
-        python3 "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-arm64.ini" -c "$_download_cache"
+        "$PYTHON_BIN" "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-arm64.ini" -c "$_download_cache"
         mkdir -p "$_src_dir/third_party/node/mac_arm64/node-darwin-arm64/"
-        python3 "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-arm64.ini" -c "$_download_cache" "$_src_dir"
+        "$PYTHON_BIN" "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-arm64.ini" -c "$_download_cache" "$_src_dir"
         if [[ $_target_cpu == "x86_64" ]]; then
-            python3 "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-x86-64-rustlib.ini" -c "$_download_cache"
-            python3 "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-x86-64-rustlib.ini" -c "$_download_cache" "$_src_dir"
+            "$PYTHON_BIN" "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-x86-64-rustlib.ini" -c "$_download_cache"
+            "$PYTHON_BIN" "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-x86-64-rustlib.ini" -c "$_download_cache" "$_src_dir"
         fi
     else
-        python3 "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-x86-64.ini" -c "$_download_cache"
+        "$PYTHON_BIN" "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-x86-64.ini" -c "$_download_cache"
         mkdir -p "$_src_dir/third_party/node/mac/node-darwin-x64/"
-        python3 "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-x86-64.ini" -c "$_download_cache" "$_src_dir"
+        "$PYTHON_BIN" "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-x86-64.ini" -c "$_download_cache" "$_src_dir"
         if [[ $_target_cpu == "arm64" ]]; then
-            python3 "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-arm64-rustlib.ini" -c "$_download_cache"
-            python3 "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-arm64-rustlib.ini" -c "$_download_cache" "$_src_dir"
+            "$PYTHON_BIN" "$_main_repo/utils/downloads.py" retrieve -i "$_root_dir/downloads-arm64-rustlib.ini" -c "$_download_cache"
+            "$PYTHON_BIN" "$_main_repo/utils/downloads.py" unpack -i "$_root_dir/downloads-arm64-rustlib.ini" -c "$_download_cache" "$_src_dir"
         fi
     fi
 
