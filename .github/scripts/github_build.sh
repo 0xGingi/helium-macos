@@ -20,8 +20,17 @@ echo $(date +%s) | tee -a "$_root_dir/build_times_$_target_cpu.log"
 echo "status=running" >> $GITHUB_OUTPUT
 
 if ! env | grep -q SCCACHE; then
-    export SCCACHE_GHA_ENABLED=on
-    export SCCACHE_GHA_VERSION="$_target_cpu"
+    # Prefer GitHub Actions cache backend only when the required env is present.
+    if [[ -n "${ACTIONS_CACHE_URL:-}" && -n "${ACTIONS_RUNTIME_TOKEN:-}" ]]; then
+        export SCCACHE_GHA_ENABLED=on
+        export SCCACHE_GHA_VERSION="$_target_cpu"
+    else
+        # Fallback to local disk cache to avoid server startup failures.
+        export SCCACHE_GHA_ENABLED=off
+        export SCCACHE_DIR="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/sccache"
+        mkdir -p "$SCCACHE_DIR"
+        export SCCACHE_CACHE_SIZE="20G"
+    fi
 fi
 
 export SCCACHE_WEBDAV_KEY_PREFIX="$_target_cpu"
