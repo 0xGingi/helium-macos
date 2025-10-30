@@ -9,10 +9,24 @@ _download_cache="$_root_dir/build/download_cache"
 _src_dir="$_root_dir/build/src"
 _main_repo="$_root_dir/helium-chromium"
 
-# Prefer a depot_tools-compatible Python (3.12) if available
-PYTHON_BIN="$(command -v python3.12 || true)"
-if [[ -z "$PYTHON_BIN" ]]; then
-  PYTHON_BIN="$(command -v python3)"
+# Choose a Python version compatible with depot_tools/gclient.
+# Allow override via HELIUM_PYTHON when set.
+if [[ -n "${HELIUM_PYTHON:-}" ]]; then
+  PYTHON_BIN="$HELIUM_PYTHON"
+else
+  # gclient in the pinned depot_tools currently uses AST aliases
+  # (e.g. ast.Str) that are removed in Python 3.12+, so prefer 3.11.
+  # Fall back through older 3.x versions, then to whatever `python3` is.
+  for _py in python3.11 python3.10 python3.9 python3; do
+    if PY="$(command -v "${_py}" 2>/dev/null)" && [[ -n "$PY" ]]; then
+      PYTHON_BIN="$PY"
+      break
+    fi
+  done
+  if [[ -z "${PYTHON_BIN:-}" ]]; then
+    echo "Error: No suitable python3 interpreter found." >&2
+    exit 1
+  fi
 fi
 
 # Clone to get the Chromium Source

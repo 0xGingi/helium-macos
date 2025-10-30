@@ -2,23 +2,25 @@
 
 # Simple script for setting up all toolchain dependencies for building Helium on macOS
 
-# 1) Ensure a depot_tools-compatible Python (3.12) is the default `python3`.
-#    depot_tools/gclient currently imports deprecated AST nodes removed in 3.13+.
-#    Using 3.13/3.14 causes AttributeError: ast has no attribute Str.
-if ! brew list --versions python@3.12 >/dev/null; then
-  brew install python@3.12 --overwrite
+# 1) Ensure a depot_tools-compatible Python (3.11) is the default `python3`.
+#    depot_tools/gclient (and its gclient_eval.py) still reference AST alias
+#    nodes (e.g., ast.Str) that are removed in Python 3.12+.
+#    Pin to 3.11 to avoid AttributeError during `gclient sync`.
+if ! brew list --versions python@3.11 >/dev/null; then
+  brew install python@3.11 --overwrite
 fi
 
-# Unlink newer python if linked, then link 3.12 and prepend to PATH deterministically.
+# Unlink newer python if linked, then link 3.11 and prepend to PATH deterministically.
 brew unlink python@3.14 >/dev/null 2>&1 || true
 brew unlink python@3.13 >/dev/null 2>&1 || true
-brew link --overwrite python@3.12
+brew unlink python@3.12 >/dev/null 2>&1 || true
+brew link --overwrite python@3.11
 
-PY312_PREFIX="$(brew --prefix python@3.12)"
-export PATH="$PY312_PREFIX/bin:$PATH"
-# Persist python 3.12 at the front of PATH for subsequent steps.
+PY311_PREFIX="$(brew --prefix python@3.11)"
+export PATH="$PY311_PREFIX/bin:$PATH"
+# Persist python 3.11 at the front of PATH for subsequent steps.
 if [ -n "${GITHUB_PATH:-}" ]; then
-  echo "$PY312_PREFIX/bin" >> "$GITHUB_PATH"
+  echo "$PY311_PREFIX/bin" >> "$GITHUB_PATH"
 fi
 python3 --version
 which python3
