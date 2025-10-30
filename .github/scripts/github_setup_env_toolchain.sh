@@ -32,8 +32,6 @@ if ! command -v sccache 2>&1 >/dev/null; then
   brew install sccache --overwrite
 fi
 
-# 3) Python and packaging deps
+# Install Python dependencies from PyPI
 pip3 install httplib2==0.22.0 requests pillow --break-system-packages
-
-# 4) DMG packager
 npm i -g appdmg@0.6.6
