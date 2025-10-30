@@ -32,6 +32,8 @@ if ! command -v sccache 2>&1 >/dev/null; then
   brew install sccache --overwrite
 fi
 
-# Install Python dependencies from PyPI
-pip3 install httplib2==0.22.0 requests pillow --break-system-packages
+# Install Python dependencies for the exact interpreter used above
+# Using `python3 -m pip` avoids installing into a different Python than gclient will run with.
+python3 -m pip install --upgrade pip --break-system-packages || true
+python3 -m pip install httplib2==0.22.0 requests pillow --break-system-packages
 npm i -g appdmg@0.6.6
